@@ -11,6 +11,7 @@
         exit; // Exit if accessed directly.
     }
 
+    require_once plugin_dir_path(__FILE__) . "/includes/class-stay-integration.php";
     require_once plugin_dir_path(__FILE__) . "/settings.php";
 
     /**
@@ -30,6 +31,7 @@
     /**
      * LOAD FUNCTIONS
      */
+    add_action( 'plugins_loaded', 'wslwoo_load', 0 );
     function wslwoo_load() {
         // Checks if WooCommerce is installed.
         if ( ! class_exists( 'Woocommerce' ) ) {
@@ -38,4 +40,52 @@
             return;
         }
     }
-    add_action( 'plugins_loaded', 'wslwoo_load', 0 );
+
+    /**
+     * Button Ajax validate Token
+     */
+    add_action( 'admin_footer', 'action_validate_token' );
+    function action_validate_token() { ?>
+        <script type="text/javascript" >
+            jQuery(document).ready(function($) {
+
+
+
+                jQuery("#validationtoken").click(function(e){
+                    e.preventDefault();
+                    var token = jQuery("#token").val();
+
+                    var data = {
+                        'action': 'validate_token',
+                        'token': token
+                    };
+
+                    jQuery.post(ajaxurl, data, function(tickets) {
+                        var ticketsObject = JSON.parse(tickets);
+                        console.log('Got this from the server: ', ticketsObject);
+                    });
+                });
+            });
+        </script>
+        <?php
+    }
+
+    /**
+     * Validate Token
+     */
+    add_action( 'wp_ajax_validate_token', 'validate_token' );
+    function validate_token() {
+        global $wpdb;
+        $data = (object) $_POST;
+        $integration = new SA_Integration($data->token);
+        $tickets = json_decode($integration->getTickets(), false);
+
+        $newStamps = [];
+        foreach ($tickets as $key => $ticket){
+            //$ticket['ticket_id'] = $key;
+            array_push($newStamps, $ticket);
+        }
+
+        echo json_encode(["length" => count($newStamps)]);
+        die;
+    }
