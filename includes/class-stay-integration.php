@@ -18,7 +18,7 @@ class SA_Integration
 {
     private $token;
 
-    const WEBSERVICE_PATH = "http://localhost:8000";
+    const WEBSERVICE_PATH = "https://api.stayapp.com.br";
 
     public function __construct($token){
         $this->token = $token;

@@ -54,15 +54,36 @@
                 jQuery("#validationtoken").click(function(e){
                     e.preventDefault();
                     var token = jQuery("#token").val();
+                    var load = $("#load");
+                    var button = $(this);
+                    var checked = $("#checked");
+                    var close = $("#close");
+
+                    load.show();
+                    button.attr('disabled', true);
 
                     var data = {
                         'action': 'validate_token',
                         'token': token
                     };
 
-                    jQuery.post(ajaxurl, data, function(tickets) {
-                        var ticketsObject = JSON.parse(tickets);
-                        console.log('Got this from the server: ', ticketsObject);
+                    jQuery.post(ajaxurl, data, function(res) {
+                        console.log("Response - ", res);
+                        var response = JSON.parse(res);
+                        if(response.status == true){
+                            alert("Token validado com sucesso!");
+                            button.removeAttr('disabled');
+                            checked.show();
+                            close.hide();
+                        }else{
+                            button.removeAttr('disabled');
+                            alert("Erro ao validar token!");
+                            checked.hide();
+                            close.show();
+                        }
+                        //
+                        load.hide();
+                        console.log('Got this from the server: ', response);
                     });
                 });
             });
@@ -75,17 +96,16 @@
      */
     add_action( 'wp_ajax_validate_token', 'validate_token' );
     function validate_token() {
-        global $wpdb;
         $data = (object) $_POST;
         $integration = new SA_Integration($data->token);
         $tickets = json_decode($integration->getTickets(), false);
 
-        $newStamps = [];
-        foreach ($tickets as $key => $ticket){
-            //$ticket['ticket_id'] = $key;
-            array_push($newStamps, $ticket);
+        if(empty($data->token) || $tickets->error == "invalid-token"){
+            delete_option('stayapp_token');
+            echo json_encode(["status" => false, "error" => $tickets->error]);
+        }else{
+            add_option( 'stayapp_token', $data->token, '', 'yes' );
+            echo json_encode(["status" => true, "error" => $tickets->error]);
         }
-
-        echo json_encode(["length" => count($newStamps)]);
         die;
     }
