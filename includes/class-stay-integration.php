@@ -29,14 +29,21 @@ class SA_Integration
     }
 
     public function addStamp(array $stamp){
+        if(empty($stamp['number']) && empty($stamp['amount']) && $stamp['ticket_id']) return;
 
+        return $this->sendRequest("/integration/addStamp", [
+            "number" => $stamp['number'],
+            "amount" => $stamp['amount'],
+            "ticket_id" => $stamp['ticket_id']
+        ]);
     }
 
-    public function sendRequest($route, $data){
+    public function sendRequest($route, $data = null){
         $call = curl_init();
         curl_setopt($call, CURLOPT_URL, self::WEBSERVICE_PATH . $route);
         curl_setopt($call, CURLOPT_RETURNTRANSFER, true);
         curl_setopt($call, CURLOPT_FOLLOWLOCATION, true);
+        if(!empty($data)) curl_setopt($call, CURLOPT_POSTFIELDS, $data);
         curl_setopt($call, CURLOPT_HTTPAUTH, CURLAUTH_BASIC);
         curl_setopt($call, CURLOPT_HTTPHEADER, array(
             'Token: ' . $this->token
