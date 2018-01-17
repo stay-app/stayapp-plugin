@@ -109,3 +109,26 @@
         }
         die;
     }
+
+    /**
+     * Order Status Completed
+     */
+    function order_status_completed( $order_id ) {
+        error_log("Order complete for order $order_id \n", 3, plugin_dir_path(__FILE__) . "orders.log");
+
+        $order = wc_get_order($order_id);
+        $order_data = $order->get_data();
+        $order_total_price = $order_data['total'];
+        $items = $order->get_items();
+
+        error_log("=====================================================\n", 3, plugin_dir_path(__FILE__) . "errors.log");
+        error_log(print_r( $order_data, true ) ."\n", 3, plugin_dir_path(__FILE__) . "orders.log");
+        foreach ( $items as $item ) {
+            $product_name = $item->get_name();
+            $product_id = $item->get_product_id();
+            $price = get_post_meta($product_id , '_price', true);
+            error_log("[$order_id] Produto - " . $product_name . " Quantidade - " . $price . "\n", 3, plugin_dir_path(__FILE__) . "orders.log");
+        }
+        error_log("=====================================================\n", 3, plugin_dir_path(__FILE__) . "orders.log");
+    }
+    add_action( 'woocommerce_order_status_completed', 'order_status_completed', 10, 1 );
