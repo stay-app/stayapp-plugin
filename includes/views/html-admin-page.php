@@ -25,16 +25,21 @@
         <thead>
             <tr>
                 <th scope="col" class="manage-column">Condição</th>
+                <th>Promoção</th>
                 <th scope="col" class="manage-column">Valor</th>
+                <th scope="col" class="manage-column">Produto</th>
                 <th scope="col" class="manage-column">Selos</th>
                 <th scope="col" class="manage-column">Ação</th>
             </tr>
         </thead>
         <tbody id="the-list">
+            <?php foreach ($conditions as $condition) ?>
             <tr>
-                <td>Quantidade do Carrinho</td>
-                <td>R$ 100,00</td>
-                <td>2</td>
+                <td><?= getConditionName($condition->condition_value) ?></td>
+                <td><?= ($condition->ticket_id ? getTicketName($condition->ticket_id) : '-') ?></td>
+                <td><?= ($condition->buy_value ? $condition->buy_value : '-') ?></td>
+                <td><?= ($condition->product_id ? getProductName($condition->product_id) : '-') ?></td>
+                <td><?= $condition->stamp_sender ?></td>
                 <td>
                     <a class="button button-primary">Editar</a>
                     <a class="button button-primary">Apagar</a>
@@ -126,3 +131,27 @@
         <p class="submit"><input type="submit" name="submit" id="submit" class="button button-primary" value="Salvar alterações"></p>
     </form>
 </div>
+
+<?php
+    function getConditionName($slug){
+        switch ($slug){
+            case 'quantity_cart':
+                return "Valor de Carrinho";
+                break;
+            case 'product_selected':
+                return "Produto Selecionado";
+                break;
+            case 'always':
+                return "Sempre";
+                break;
+        }
+    }
+
+    function getTicketName($key){
+        return "Name";
+    }
+
+    function getProductName($id){
+        return $id;
+    }
+?>

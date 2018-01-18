@@ -12,6 +12,7 @@
     }
 
     require_once plugin_dir_path(__FILE__) . "/includes/class-stay-integration.php";
+    require_once plugin_dir_path(__FILE__) . "/includes/class-stay-install.php";
     require_once plugin_dir_path(__FILE__) . "/settings.php";
 
     /**
@@ -231,3 +232,9 @@
             return "55" . $phoneNumber;
         }
     }
+
+    function stayapp_activate() {
+        error_log("Plugin Ativado", 3, plugin_dir_path(__FILE__) . "orders.log");
+        SA_Install::create_tables();
+    }
+    register_activation_hook( __FILE__, 'stayapp_activate' );

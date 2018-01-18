@@ -24,12 +24,12 @@ class SA_Install
         }
 
         $tables = "
-            CREATE TABLE {$wpdb->prefix}stayapp_conditions (
+            CREATE TABLE {$wpdb->prefix}stayapp_conditions IF NOT EXISTS (
               id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
               ticket_id char(32) NOT NULL,
               product_id BIGINT,
               buy_value DOUBLE,
-              condition_value BIGINT NOT NULL,
+              condition_value char(32) NOT NULL,
               stamp_sender BIGINT UNSIGNED NOT NULL,
               PRIMARY KEY  (id)
             ) $collate;
@@ -37,8 +37,11 @@ class SA_Install
         return $tables;
     }
 
-    private static function create_tables() {
+    public static function create_tables() {
         global $wpdb;
+
+        require_once( ABSPATH . 'wp-admin/includes/upgrade.php' );
+
         $wpdb->hide_errors();
         dbDelta( self::get_schema() );
     }

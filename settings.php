@@ -7,9 +7,19 @@
      * REQUIRE TEMPALTE
      */
     function component_option_page(){
+        // GET TICKETS
         $integration = new SA_Integration(get_option('stayapp_token'));
         global $tickets;
         $tickets = json_decode($integration->getTickets(), false);
+
+        // GET CONDITIONS
+        global $wpdb;
+        global $conditions;
+
+        $conditions = $wpdb->get_results(
+            "SELECT * FROM {$wpdb->prefix}stayapp_conditions"
+        );
+
         require_once plugin_dir_path(__FILE__) . "/includes/views/html-admin-page.php";
     }
     add_action('admin_menu', 'add_page');
