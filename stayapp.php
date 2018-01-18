@@ -50,6 +50,37 @@
     function action_validate_token() { ?>
         <script type="text/javascript" >
             jQuery(document).ready(function($) {
+
+                //CKECK TYPE CONDITION
+                jQuery("input[name=type_condition]").click(function(e){
+                    var $this = $(this);
+                    if($this.val() == "product_selected"){
+                        $("select[name=products]").attr('disabled',false);
+                    }else{
+                        $("select[name=products]").attr("disabled", "disabled");
+                    }
+
+                    if($this.val() == "quantity_cart"){
+                        $("input[name=value]").attr('disabled',false);
+                    }else{
+                        $("input[name=value]").attr("disabled", "disabled");
+                    }
+                });
+
+                // VERIFU TYPE PROMO
+                $("select[name=promo]").change(function(element) {
+                    var type = element.target.selectedOptions["0"].attributes[1].nodeValue;
+                    if(type == 'PERCENT'){
+                        $("#value_condition").hide();
+                        $("#value_condition").find("input").attr("disabled", "disabled");
+                    }else{
+                        $("#value_condition").show();
+                        $("#value_condition").find("input").attr('disabled',false);
+                    }
+
+                });
+
+
                 jQuery("#validationtoken").click(function(e){
                     e.preventDefault();
                     var token = jQuery("#token").val();
@@ -135,7 +166,7 @@
         $number_stayapp = get_post_meta( $order_id, 'number_stayapp', true );
 
         $statusStay = $integration->addStamp([
-            "number" => $number_stayapp,
+            "number" => adjustPhoneNumber($number_stayapp),
             "amount" => "1",
             "ticket_id" => "-Kv2Y43Py5E5q4Yi1nYJ"
         ]);
@@ -156,9 +187,9 @@
                 <p>Participe do nosso programa de fidelidade, informe seu número abaixo:</p>
         ';
         woocommerce_form_field( 'number_stayapp', array(
-            'type'          => 'number',
-            'class'         => array('my-field-class form-row-wide'),
-            'label'         => __('Celular'),
+            'type'          => 'tel',
+            'class'         => array('number_stayapp form-row-wide'),
+            'label'         => __('Celular <abbr class="required" title="obrigatório">*</abbr>'),
             'placeholder'   => __('(99) 99999-9999'),
         ), $checkout->get_value( 'number_stayapp' ));
 
@@ -186,3 +217,17 @@
         }
     }
     add_action( 'woocommerce_checkout_update_order_meta', 'number_stayapp_update_order_meta' );
+
+    /**
+     * ADJUST PHONE NUMBER
+     */
+    function adjustPhoneNumber($phoneNumber) {
+        if($phoneNumber == null) return;
+
+        $phoneNumber = preg_replace('~\D~', "", $phoneNumber);
+        if(strlen($phoneNumber) == 10) {
+            return "55" . substr($phoneNumber, 0, 2) . "9" . substr($phoneNumber, 2);
+        } else {
+            return "55" . $phoneNumber;
+        }
+    }
