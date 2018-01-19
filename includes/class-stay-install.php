@@ -24,7 +24,7 @@ class SA_Install
         }
 
         $tables = "
-            CREATE TABLE {$wpdb->prefix}stayapp_conditions IF NOT EXISTS (
+            CREATE TABLE IF NOT EXISTS {$wpdb->prefix}stayapp_conditions (
               id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
               ticket_id char(32) NOT NULL,
               product_id BIGINT,
@@ -39,9 +39,7 @@ class SA_Install
 
     public static function create_tables() {
         global $wpdb;
-
         require_once( ABSPATH . 'wp-admin/includes/upgrade.php' );
-
         $wpdb->hide_errors();
         dbDelta( self::get_schema() );
     }

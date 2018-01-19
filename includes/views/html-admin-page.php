@@ -33,18 +33,19 @@
             </tr>
         </thead>
         <tbody id="the-list">
-            <?php foreach ($conditions as $condition) ?>
-            <tr>
-                <td><?= getConditionName($condition->condition_value) ?></td>
-                <td><?= ($condition->ticket_id ? getTicketName($condition->ticket_id) : '-') ?></td>
-                <td><?= ($condition->buy_value ? $condition->buy_value : '-') ?></td>
-                <td><?= ($condition->product_id ? getProductName($condition->product_id) : '-') ?></td>
-                <td><?= $condition->stamp_sender ?></td>
-                <td>
-                    <a class="button button-primary">Editar</a>
-                    <a class="button button-primary">Apagar</a>
-                </td>
-            </tr>
+            <?php foreach ($conditions as $condition): ?>
+                <tr>
+                    <td><?= getConditionName($condition->condition_value) ?></td>
+                    <td><?= ($condition->ticket_id ? getTicketName($condition->ticket_id) : '-') ?></td>
+                    <td><?= ($condition->buy_value ? $condition->buy_value : '-') ?></td>
+                    <td><?= ($condition->product_id ? getProductName($condition->product_id) : '-') ?></td>
+                    <td><?= $condition->stamp_sender ?></td>
+                    <td>
+                        <a class="button button-primary">Editar</a>
+                        <a class="button button-primary">Apagar</a>
+                    </td>
+                </tr>
+            <?php endforeach;?>
         </tbody>
     </table>
 
@@ -52,7 +53,7 @@
 
     <h2>Criar condições</h2>
 
-    <form>
+    <form id="sendcondition">
         <table class="form-table">
             <tbody>
                 <tr>
@@ -83,23 +84,23 @@
                             <ul>
                                 <li>
                                     <label for="page_on_front">Produtos:
-                                        <select name="products" id="page_on_front" disabled>
+                                        <select name="products" id="page_on_front" disabled required>
                                             <option value="">— Selecionar —</option>
                                             <?php
-                                            $args = array('post_type'      => 'product','posts_per_page' => -1);
-                                            $loop = new WP_Query($args);
-                                            while ( $loop->have_posts() ) : $loop->the_post();
-                                                global $product;
-                                                echo '<option class="level-0" value="9"> ' . get_the_title() . ' </option>';
-                                            endwhile;
-                                            wp_reset_query();
+                                                $args = array('post_type'      => 'product','posts_per_page' => -1);
+                                                $loop = new WP_Query($args);
+                                                while ( $loop->have_posts() ) : $loop->the_post();
+                                                    global $product;
+                                                    echo '<option value="' . get_the_ID() . '"> ' . get_the_title() . ' </option>';
+                                                endwhile;
+                                                wp_reset_query();
                                             ?>
                                         </select>
                                     </label>
                                 </li>
                                 <li>
                                     <label for="page_on_front">Valor:
-                                        <input type="text" name="value">
+                                        <input type="number" name="value" required>
                                     </label>
                                 </li>
                             </ul>
@@ -109,7 +110,8 @@
                 <tr>
                     <th scope="row"><label for="blogdescription">Promoção</label></th>
                     <td>
-                        <select name="promo" id="promo">
+                        <select name="promo" id="promo" required>
+                            <option value="">— Selecionar —</option>
                             <?php
                                 foreach ($tickets as $key => $ticket){
                                     if($ticket->is_canceled)
@@ -123,7 +125,7 @@
                 <tr id="value_condition">
                     <th scope="row"><label for="blogdescription">Quantidade de Selo</label></th>
                     <td>
-                        <input name="blogname" type="text" id="blogname" value="" class="regular-text">
+                        <input name="quantity_stamp" type="number" id="quantity_stamp" required class="regular-text">
                     </td>
                 </tr>
             </tbody>

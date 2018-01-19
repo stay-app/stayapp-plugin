@@ -112,9 +112,25 @@
                             checked.hide();
                             close.show();
                         }
+                        window.location.reload();
                         //
                         load.hide();
                         console.log('Got this from the server: ', response);
+                    });
+                });
+
+
+                jQuery("#sendcondition").submit(function(e){
+                    e.preventDefault();
+
+                    var data = {
+                        'action': 'add_condition',
+                        'values': $(this).serialize()
+                    };
+
+                    jQuery.post(ajaxurl, data, function(res) {
+                        var data = JSON.parse(res);
+                        console.log("Response - ", data);
                     });
                 });
             });
@@ -141,6 +157,47 @@
         die;
     }
     add_action( 'wp_ajax_validate_token', 'validate_token' );
+
+    /**
+     * ADD CONDITION
+     */
+    function add_condition() {
+        parse_str($_POST['values'], $data);
+        global $wpdb;
+        // Verify type condition
+        switch ($data['type_condition']){
+            case "quantity_cart":
+                $results = $wpdb->insert(
+                    $wpdb->prefix . 'stayapp_conditions',
+                    array(
+                        'condition_value' => $data['type_condition'],
+                        'stamp_sender' => $data['quantity_stamp'],
+                        'buy_value' => $data['value'],
+                        'promo' => $data['promo']
+                    ),
+                    array(
+                        '%s',
+                        '%d',
+                        '%f',
+                        '%s'
+                    )
+                );
+                $query = sprintf("insert into %sstayapp_conditions (condition_value, stamp_sender, buy_value, ,promo)", $wpdb->prefix, $data['type_condition'], )
+
+                $data = 'quantity_cart';
+                break;
+            case "product_selected":
+                $data = 'product_selected';
+                break;
+            case "always":
+                $data = 'always';
+                break;
+        }
+
+        echo json_encode($results);
+        die;
+    }
+    add_action( 'wp_ajax_add_condition', 'add_condition' );
 
     /**
      * ORDER STATUS COMPLETED
@@ -234,7 +291,7 @@
     }
 
     function stayapp_activate() {
-        error_log("Plugin Ativado", 3, plugin_dir_path(__FILE__) . "orders.log");
+        error_log("Plugin Ativado - " . date("d/m/Y") . "\n", 3, plugin_dir_path(__FILE__) . "orders.log");
         SA_Install::create_tables();
     }
     register_activation_hook( __FILE__, 'stayapp_activate' );
