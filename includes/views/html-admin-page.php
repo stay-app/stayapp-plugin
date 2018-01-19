@@ -33,10 +33,12 @@
             </tr>
         </thead>
         <tbody id="the-list">
-            <?php foreach ($conditions as $condition): ?>
+            <?php foreach ($conditions as $condition):
+                $name = (empty($tickets->error) ? $tickets->{$condition->ticket_id}->name : '');
+                ?>
                 <tr>
                     <td><?= getConditionName($condition->condition_value) ?></td>
-                    <td><?= ($condition->ticket_id ?  $tickets->{$condition->ticket_id}->name : '-') ?></td>
+                    <td><?= ($condition->ticket_id ? $name  : '-') ?></td>
                     <td><?= ($condition->buy_value ? $condition->buy_value : '-') ?></td>
                     <td><?= ($condition->product_id ? getProductName($condition->product_id) : '-') ?></td>
                     <td><?= $condition->stamp_sender ?></td>
@@ -113,12 +115,14 @@
                         <select name="promo" id="promo" required>
                             <option value="">— Selecionar —</option>
                             <?php
-                                foreach ($tickets as $key => $ticket){
-                                    if($ticket->is_canceled)
-                                        continue;
+                                if(empty($tickets->error)){
+                                    foreach ($tickets as $key => $ticket){
+                                        if($ticket->is_canceled)
+                                            continue;
+                                        echo '<option value="' . $key . '" data-type="' . $ticket->stamp_type .  '">' . $ticket->name .'</option>';
+                                    }
+                                }
                             ?>
-                                <option value="<?= $key ?>" data-type="<?= $ticket->stamp_type ?>"><?= $ticket->name ?></option>
-                            <?php } ?>
                         </select>
                     </td>
                 </tr>
