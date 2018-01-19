@@ -131,6 +131,8 @@
                     jQuery.post(ajaxurl, data, function(res) {
                         var data = JSON.parse(res);
                         console.log("Response - ", data);
+
+                        window.location.reload();
                     });
                 });
             });
@@ -173,7 +175,7 @@
                         'condition_value' => $data['type_condition'],
                         'stamp_sender' => $data['quantity_stamp'],
                         'buy_value' => $data['value'],
-                        'promo' => $data['promo']
+                        'ticket_id' => $data['promo']
                     ),
                     array(
                         '%s',
@@ -182,15 +184,39 @@
                         '%s'
                     )
                 );
-                $query = sprintf("insert into %sstayapp_conditions (condition_value, stamp_sender, buy_value, ,promo)", $wpdb->prefix, $data['type_condition'], )
-
-                $data = 'quantity_cart';
                 break;
             case "product_selected":
-                $data = 'product_selected';
+                $results = $wpdb->insert(
+                    $wpdb->prefix . 'stayapp_conditions',
+                    array(
+                        'condition_value' => $data['type_condition'],
+                        'product_id' => $data['products'],
+                        'ticket_id' => $data['promo'],
+                        'stamp_sender' => $data['quantity_stamp']
+                    ),
+                    array(
+                        '%s',
+                        '%d',
+                        '%f',
+                        '%s'
+                    )
+                );
                 break;
             case "always":
-                $data = 'always';
+                $results = $wpdb->insert(
+                    $wpdb->prefix . 'stayapp_conditions',
+                    array(
+                        'condition_value' => $data['type_condition'],
+                        'ticket_id' => $data['promo'],
+                        'stamp_sender' => $data['quantity_stamp']
+                    ),
+                    array(
+                        '%s',
+                        '%d',
+                        '%f',
+                        '%s'
+                    )
+                );
                 break;
         }
 

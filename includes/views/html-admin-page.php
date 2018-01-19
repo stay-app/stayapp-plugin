@@ -36,7 +36,7 @@
             <?php foreach ($conditions as $condition): ?>
                 <tr>
                     <td><?= getConditionName($condition->condition_value) ?></td>
-                    <td><?= ($condition->ticket_id ? getTicketName($condition->ticket_id) : '-') ?></td>
+                    <td><?= ($condition->ticket_id ?  $tickets->{$condition->ticket_id}->name : '-') ?></td>
                     <td><?= ($condition->buy_value ? $condition->buy_value : '-') ?></td>
                     <td><?= ($condition->product_id ? getProductName($condition->product_id) : '-') ?></td>
                     <td><?= $condition->stamp_sender ?></td>
@@ -135,25 +135,21 @@
 </div>
 
 <?php
-    function getConditionName($slug){
-        switch ($slug){
-            case 'quantity_cart':
-                return "Valor de Carrinho";
-                break;
-            case 'product_selected':
-                return "Produto Selecionado";
-                break;
-            case 'always':
-                return "Sempre";
-                break;
-        }
+function getConditionName($slug){
+    switch ($slug){
+        case 'quantity_cart':
+            return "Valor de Carrinho";
+            break;
+        case 'product_selected':
+            return "Produto Selecionado";
+            break;
+        case 'always':
+            return "Sempre";
+            break;
     }
+}
 
-    function getTicketName($key){
-        return "Name";
-    }
-
-    function getProductName($id){
-        return $id;
-    }
+function getProductName($id){
+    return $id;
+}
 ?>

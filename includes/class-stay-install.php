@@ -26,11 +26,11 @@ class SA_Install
         $tables = "
             CREATE TABLE IF NOT EXISTS {$wpdb->prefix}stayapp_conditions (
               id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
-              ticket_id char(32) NOT NULL,
+              ticket_id char(32),
               product_id BIGINT,
               buy_value DOUBLE,
-              condition_value char(32) NOT NULL,
-              stamp_sender BIGINT UNSIGNED NOT NULL,
+              condition_value char(32),
+              stamp_sender BIGINT UNSIGNED,
               PRIMARY KEY  (id)
             ) $collate;
 		";
