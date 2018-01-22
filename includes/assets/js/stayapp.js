@@ -9,4 +9,5 @@ jQuery(document).ready(function(){
         };
 
     jQuery('#number_stayapp').mask(SPMaskBehavior, spOptions);
+    jQuery('#price').mask('000.000.000.000.000,00', {reverse: true});
 });

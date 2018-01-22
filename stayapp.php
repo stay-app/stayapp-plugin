@@ -46,6 +46,15 @@
     add_action( 'plugins_loaded', 'wslwoo_load', 0 );
 
     /**
+     * REGISTER JS
+     */
+    function enqueue_script() {
+        wp_enqueue_script('maskedinput', plugin_dir_url( __FILE__ ) . 'includes/assets/js/jquery.maskedinput.js', array( 'jquery' ), '1.14.13', false );
+        wp_enqueue_script('stayapp', plugin_dir_url( __FILE__ ) . 'includes/assets/js/stayapp.js', false );
+    }
+    add_action( 'admin_footer', 'enqueue_script', 0);
+
+    /**
      * BUTTON AJAX VALIDATE TOKEN
      */
     function action_validate_token() { ?>
@@ -135,6 +144,24 @@
                         window.location.reload();
                     });
                 });
+
+
+                jQuery(".destroy").click(function(e){
+                    e.preventDefault();
+                    var id = $(this).data('id');
+                    console.log(id);
+                    var data = {
+                        'action': 'remove_condition',
+                        'id': id
+                    };
+
+                    jQuery.post(ajaxurl, data, function(res) {
+                        var data = JSON.parse(res);
+                        console.log("Response - ", data);
+
+                        window.location.reload();
+                    });
+                });
             });
         </script>
         <?php
@@ -161,11 +188,28 @@
     add_action( 'wp_ajax_validate_token', 'validate_token' );
 
     /**
+     * VALIDATE TOKEN
+     */
+    function remove_condition() {
+        $data = (object) $_POST;
+        global $wpdb;
+        $wpdb->delete( $wpdb->prefix . 'stayapp_conditions', array( 'id' => $data->id ) );
+        echo json_encode($data);
+        die;
+    }
+    add_action( 'wp_ajax_remove_condition', 'remove_condition' );
+
+
+
+    /**
      * ADD CONDITION
      */
     function add_condition() {
         parse_str($_POST['values'], $data);
         global $wpdb;
+        if(!empty($data['value'])){
+            $price = str_replace(",", ".", str_replace(".", "", $data['value']));
+        }
         // Verify type condition
         switch ($data['type_condition']){
             case "quantity_cart":
@@ -174,7 +218,7 @@
                     array(
                         'condition_value' => $data['type_condition'],
                         'stamp_sender' => $data['quantity_stamp'],
-                        'buy_value' => $data['value'],
+                        'buy_value' => (isset($price) ? $price : null),
                         'ticket_id' => $data['promo']
                     ),
                     array(
@@ -239,20 +283,79 @@
         $items = $order->get_items();
 
         $integration = new SA_Integration(get_option('stayapp_token'));
-
-        foreach ( $items as $item ) {
-            $product_name = $item->get_name();
-            $product_id = $item->get_product_id();
-            $price = get_post_meta($product_id , '_price', true);
-            error_log("[$order_id] PRODUTO - " . $product_name . " QUANTIDADE - " . $price . "\n", 3, plugin_dir_path(__FILE__) . "orders.log");
-        }
         $number_stayapp = get_post_meta( $order_id, 'number_stayapp', true );
 
-        $statusStay = $integration->addStamp([
-            "number" => adjustPhoneNumber($number_stayapp),
-            "amount" => "1",
-            "ticket_id" => "-Kv2Y43Py5E5q4Yi1nYJ"
-        ]);
+        //$wpdb->prefix . 'stayapp_conditions'
+
+        global $wpdb;
+        global $conditions;
+
+        $conditions = $wpdb->get_results(
+            "SELECT * FROM {$wpdb->prefix}stayapp_conditions"
+        );
+
+        if(!empty($conditions)){
+            $ticket = $integration->getTickets();
+            foreach ($conditions as $condition){
+                if($condition->type_condition == 'quantity_cart'){
+                    if($order_total_price >= $condition->buy_value){
+                        if($ticket[$condition->ticket_id]['stamp_type'] == 'PERCENT'){
+                            $statusStay = $integration->addStamp([
+                                "number" => adjustPhoneNumber($number_stayapp),
+                                "amount" => $order_total_price,
+                                "buy_value" => $order_total_price,
+                                "ticket_id" => $condition->ticket_id
+                            ]);
+                        }else{
+                            $statusStay = $integration->addStamp([
+                                "number" => adjustPhoneNumber($number_stayapp),
+                                "amount" => $condition->stamp_sender,
+                                "ticket_id" => $condition->ticket_id
+                            ]);
+                        }
+                    }
+                }elseif($condition->type_condition == 'product_selected'){
+                    foreach ( $items as $item ) {
+                        $product_name = $item->get_name();
+                        $product_id = $item->get_product_id();
+                        $price = get_post_meta($product_id , '_price', true);
+                        if($condition->product_id == $product_id){
+                            if($ticket[$condition->ticket_id]['stamp_type'] == 'PERCENT'){
+                                $statusStay = $integration->addStamp([
+                                    "number" => adjustPhoneNumber($number_stayapp),
+                                    "amount" => $order_total_price,
+                                    "buy_value" => $order_total_price,
+                                    "ticket_id" => $condition->ticket_id
+                                ]);
+                            }else{
+                                $statusStay = $integration->addStamp([
+                                    "number" => adjustPhoneNumber($number_stayapp),
+                                    "amount" => $condition->stamp_sender,
+                                    "ticket_id" => $condition->ticket_id
+                                ]);
+                            }
+                        }
+                    }
+                }elseif($condition->type_condition == 'always'){
+                    if($ticket[$condition->ticket_id]['stamp_type'] == 'PERCENT'){
+                        $statusStay = $integration->addStamp([
+                            "number" => adjustPhoneNumber($number_stayapp),
+                            "amount" => $order_total_price,
+                            "buy_value" => $order_total_price,
+                            "ticket_id" => $condition->ticket_id
+                        ]);
+                    }else{
+                        $statusStay = $integration->addStamp([
+                            "number" => adjustPhoneNumber($number_stayapp),
+                            "amount" => $condition->stamp_sender,
+                            "ticket_id" => $condition->ticket_id
+                        ]);
+                    }
+                }
+            }
+        }
+
+
 
         error_log("PHONE - $number_stayapp STATUS - $statusStay \n", 3, plugin_dir_path(__FILE__) . "orders.log");
     }

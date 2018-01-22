@@ -43,8 +43,7 @@
                     <td><?= ($condition->product_id ? getProductName($condition->product_id) : '-') ?></td>
                     <td><?= $condition->stamp_sender ?></td>
                     <td>
-                        <a class="button button-primary">Editar</a>
-                        <a class="button button-primary">Apagar</a>
+                        <a class="button button-primary destroy" data-id="<?= $condition->id ?>">Apagar</a>
                     </td>
                 </tr>
             <?php endforeach;?>
@@ -101,8 +100,17 @@
                                     </label>
                                 </li>
                                 <li>
+                                    <input type="checkbox" id="by_quantity" disabled>
+                                    <label for="by_quantity">Enviar apenas um selo ou equivalente a quantia de itens</label>
+                                    <style>
+                                        input[id=by_quantity][disabled] + label {
+                                            color: #ff0000;
+                                        }
+                                    </style>
+                                </li>
+                                <li>
                                     <label for="page_on_front">Valor:
-                                        <input type="number" name="value" required>
+                                        <input type="text" name="value" id="price" required>
                                     </label>
                                 </li>
                             </ul>
