@@ -343,7 +343,8 @@
                                 ]);
                                 error_log("PHONE - $number_stayapp STATUS - $statusStay \n", 3, plugin_dir_path(__FILE__) . "orders.log");
                             }
-                            if($condition->stamp_by_item && $condition->stamp_by_item == false){
+                            error_log("Stamp by item - $condition->stamp_by_item \n", 3, plugin_dir_path(__FILE__) . "orders.log");
+                            if($condition->stamp_by_item != 1){
                                 break 1;
                             }
                         }
