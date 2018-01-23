@@ -29,6 +29,7 @@ class SA_Install
               ticket_id char(32),
               product_id BIGINT,
               buy_value DOUBLE,
+              stamp_by_item BOOLEAN,
               condition_value char(32),
               stamp_sender BIGINT UNSIGNED,
               PRIMARY KEY  (id)

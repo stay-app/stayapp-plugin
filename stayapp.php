@@ -66,8 +66,10 @@
                     var $this = $(this);
                     if($this.val() == "product_selected"){
                         $("select[name=products]").attr('disabled',false);
+                        $("input[id=stamp_by_item]").attr('disabled',false);
                     }else{
                         $("select[name=products]").attr("disabled", "disabled");
+                        $("input[id=stamp_by_item]").attr("disabled", "disabled");
                     }
 
                     if($this.val() == "quantity_cart"){
@@ -236,12 +238,14 @@
                         'condition_value' => $data['type_condition'],
                         'product_id' => $data['products'],
                         'ticket_id' => $data['promo'],
-                        'stamp_sender' => $data['quantity_stamp']
+                        'stamp_sender' => $data['quantity_stamp'],
+                        'stamp_by_item' => (($data['stamp_by_item'] && !empty($data['stamp_by_item'])) ? true : false)
                     ),
                     array(
                         '%s',
                         '%d',
                         '%s',
+                        '%d',
                         '%d'
                     )
                 );
@@ -295,9 +299,10 @@
         );
 
         if(!empty($conditions)){
+            error_log("-- Condition exists --\n", 3, plugin_dir_path(__FILE__) . "orders.log");
             $ticket = $integration->getTickets();
             foreach ($conditions as $condition){
-                if($condition->type_condition == 'quantity_cart'){
+                if($condition->condition_value == 'quantity_cart'){
                     if($order_total_price >= $condition->buy_value){
                         if($ticket[$condition->ticket_id]['stamp_type'] == 'PERCENT'){
                             $statusStay = $integration->addStamp([
@@ -306,15 +311,17 @@
                                 "buy_value" => $order_total_price,
                                 "ticket_id" => $condition->ticket_id
                             ]);
+                            error_log("PHONE - $number_stayapp STATUS - $statusStay \n", 3, plugin_dir_path(__FILE__) . "orders.log");
                         }else{
                             $statusStay = $integration->addStamp([
                                 "number" => adjustPhoneNumber($number_stayapp),
                                 "amount" => $condition->stamp_sender,
                                 "ticket_id" => $condition->ticket_id
                             ]);
+                            error_log("PHONE - $number_stayapp STATUS - $statusStay \n", 3, plugin_dir_path(__FILE__) . "orders.log");
                         }
                     }
-                }elseif($condition->type_condition == 'product_selected'){
+                }elseif($condition->condition_value == 'product_selected'){
                     foreach ( $items as $item ) {
                         $product_name = $item->get_name();
                         $product_id = $item->get_product_id();
@@ -327,16 +334,21 @@
                                     "buy_value" => $order_total_price,
                                     "ticket_id" => $condition->ticket_id
                                 ]);
+                                error_log("PHONE - $number_stayapp STATUS - $statusStay \n", 3, plugin_dir_path(__FILE__) . "orders.log");
                             }else{
                                 $statusStay = $integration->addStamp([
                                     "number" => adjustPhoneNumber($number_stayapp),
                                     "amount" => $condition->stamp_sender,
                                     "ticket_id" => $condition->ticket_id
                                 ]);
+                                error_log("PHONE - $number_stayapp STATUS - $statusStay \n", 3, plugin_dir_path(__FILE__) . "orders.log");
+                            }
+                            if($condition->stamp_by_item && $condition->stamp_by_item == false){
+                                break 1;
                             }
                         }
                     }
-                }elseif($condition->type_condition == 'always'){
+                }elseif($condition->condition_value == 'always'){
                     if($ticket[$condition->ticket_id]['stamp_type'] == 'PERCENT'){
                         $statusStay = $integration->addStamp([
                             "number" => adjustPhoneNumber($number_stayapp),
@@ -344,20 +356,18 @@
                             "buy_value" => $order_total_price,
                             "ticket_id" => $condition->ticket_id
                         ]);
+                        error_log("PHONE - $number_stayapp STATUS - $statusStay \n", 3, plugin_dir_path(__FILE__) . "orders.log");
                     }else{
                         $statusStay = $integration->addStamp([
                             "number" => adjustPhoneNumber($number_stayapp),
                             "amount" => $condition->stamp_sender,
                             "ticket_id" => $condition->ticket_id
                         ]);
+                        error_log("PHONE - $number_stayapp STATUS - $statusStay \n", 3, plugin_dir_path(__FILE__) . "orders.log");
                     }
                 }
             }
         }
-
-
-
-        error_log("PHONE - $number_stayapp STATUS - $statusStay \n", 3, plugin_dir_path(__FILE__) . "orders.log");
     }
     add_action( 'woocommerce_order_status_completed', 'order_status_completed', 10, 1 );
 

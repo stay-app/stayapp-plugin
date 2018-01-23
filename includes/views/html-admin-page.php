@@ -41,7 +41,7 @@
                     <td><?= ($condition->ticket_id ? $name  : '-') ?></td>
                     <td><?= ($condition->buy_value ? $condition->buy_value : '-') ?></td>
                     <td><?= ($condition->product_id ? getProductName($condition->product_id) : '-') ?></td>
-                    <td><?= $condition->stamp_sender ?></td>
+                    <td><?= $condition->stamp_sender . " " . ($condition->stamp_by_item ? ' há cada item' : '') ?></td>
                     <td>
                         <a class="button button-primary destroy" data-id="<?= $condition->id ?>">Apagar</a>
                     </td>
@@ -100,11 +100,11 @@
                                     </label>
                                 </li>
                                 <li>
-                                    <input type="checkbox" id="by_quantity" disabled>
-                                    <label for="by_quantity">Enviar apenas um selo ou equivalente a quantia de itens</label>
+                                    <input type="checkbox" id="stamp_by_item" name="stamp_by_item" disabled>
+                                    <label for="stamp_by_item">Enviar apenas um selo ou equivalente a quantia de itens</label>
                                     <style>
-                                        input[id=by_quantity][disabled] + label {
-                                            color: #ff0000;
+                                        input[id=stamp_by_item][disabled] + label {
+                                            color: #959595;
                                         }
                                     </style>
                                 </li>
