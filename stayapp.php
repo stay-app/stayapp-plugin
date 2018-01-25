@@ -285,6 +285,7 @@
         $order_data = $order->get_data();
         $order_total_price = $order_data['total'];
         $items = $order->get_items();
+        error_log(print_r($order_data, true) . " \n", 3, plugin_dir_path(__FILE__) . "orders.log");
 
         $integration = new SA_Integration(get_option('stayapp_token'));
         $number_stayapp = get_post_meta( $order_id, 'number_stayapp', true );
@@ -326,27 +327,37 @@
                         $product_name = $item->get_name();
                         $product_id = $item->get_product_id();
                         $price = get_post_meta($product_id , '_price', true);
+                        $quantity = $item->get_quantity();
+
                         if($condition->product_id == $product_id){
                             if($ticket[$condition->ticket_id]['stamp_type'] == 'PERCENT'){
-                                $statusStay = $integration->addStamp([
-                                    "number" => adjustPhoneNumber($number_stayapp),
-                                    "amount" => $order_total_price,
-                                    "buy_value" => $order_total_price,
-                                    "ticket_id" => $condition->ticket_id
-                                ]);
+                                for ($i = 1; $i <= $quantity; $i++){
+                                    $statusStay = $integration->addStamp([
+                                        "number" => adjustPhoneNumber($number_stayapp),
+                                        "amount" => $order_total_price,
+                                        "buy_value" => $order_total_price,
+                                        "ticket_id" => $condition->ticket_id
+                                    ]);
+                                    if($condition->stamp_by_item != 1){
+                                        break 2;
+                                    }
+                                }
                                 error_log("PHONE - $number_stayapp STATUS - $statusStay \n", 3, plugin_dir_path(__FILE__) . "orders.log");
                             }else{
-                                $statusStay = $integration->addStamp([
-                                    "number" => adjustPhoneNumber($number_stayapp),
-                                    "amount" => $condition->stamp_sender,
-                                    "ticket_id" => $condition->ticket_id
-                                ]);
+                                for ($i = 1; $i <= $quantity; $i++){
+                                    $statusStay = $integration->addStamp([
+                                        "number" => adjustPhoneNumber($number_stayapp),
+                                        "amount" => $condition->stamp_sender,
+                                        "ticket_id" => $condition->ticket_id
+                                    ]);
+                                    if($condition->stamp_by_item != 1){
+                                        break 2;
+                                    }
+                                }
                                 error_log("PHONE - $number_stayapp STATUS - $statusStay \n", 3, plugin_dir_path(__FILE__) . "orders.log");
                             }
                             error_log("Stamp by item - $condition->stamp_by_item \n", 3, plugin_dir_path(__FILE__) . "orders.log");
-                            if($condition->stamp_by_item != 1){
-                                break 1;
-                            }
+
                         }
                     }
                 }elseif($condition->condition_value == 'always'){
