@@ -1,8 +1,6 @@
-=== WooCommerce ===
+=== StayApp ===
 Contributors: StayApp
 Tags: ecommerce, e-commerce, store, sales, app, fidelity
-License: GPLv3
-License URI: https://www.gnu.org/licenses/gpl-3.0.html
 
 Plugin for integration of the StayApp platform with the woocommerce plugin
 

@@ -289,8 +289,7 @@
 
         $integration = new SA_Integration(get_option('stayapp_token'));
         $number_stayapp = get_post_meta( $order_id, 'number_stayapp', true );
-
-        //$wpdb->prefix . 'stayapp_conditions'
+        //$number_stayapp = $order_data['billing']['phone'];
 
         global $wpdb;
         global $conditions;
@@ -413,6 +412,9 @@
         // Check if set, if its not set add an error.
         if ( ! $_POST['number_stayapp'] )
             wc_add_notice( __( 'Preencha com um número de celular, para participar do programa de fidelidade.' ), 'error' );
+
+        if (!empty($_POST['number_stayapp']) && strlen($_POST['number_stayapp']) < 14)
+            wc_add_notice( __( 'Preencha com um número de celular corretamente, para participar do programa de fidelidade.' ), 'error' );
     }
     add_action('woocommerce_checkout_process', 'number_stayapp_checkout_field_process');
 
@@ -440,6 +442,9 @@
         }
     }
 
+    /**
+     * ACTIVATE PLUGIN
+     */
     function stayapp_activate() {
         error_log("Plugin Ativado - " . date("d/m/Y") . "\n", 3, plugin_dir_path(__FILE__) . "orders.log");
         SA_Install::create_tables();
